@@ -1,0 +1,132 @@
+GenericConfigTAB:
+conf t
+vlan 25
+name <>.com
+int vlan 25
+no shutdown
+ip add 10.0.x.x 255.255.x.x
+ip dhcp Excluded-Add 10.0.x.x 10.0.x.x
+ip dhcp pool <>.com
+ network 10.0.x.x 255.255.x.x
+ default router 10.0.x.x
+ domain-name <>.com
+ dns-server 10.m.1.10
+ option 150 ip 10.m.100.8
+ do sh run | sec dhcp
+Int fa 0/5
+ switchport access vlan 25
+
+for nso.gov.ph 
+conf t
+vlan 25
+name nso.gov.ph
+int vlan 25
+no shutdown
+ip add 10.0.0.65 255.255.255.192 ---- first valid
+ip dhcp Excluded-Add 10.0.0.65 10.0.0.69
+ip dhcp pool nso.gov.ph
+ network 10.0.0.64 255.255.255.192
+ default-router 10.0.0.65
+ domain-name nso.gov.ph.com
+ dns-server 10.32.1.10
+ option 150 ip 10.32.100.8
+ do sh run | sec dhcp
+Int fa 0/5
+ switchport access vlan 25
+
+ for pnp.gov.ph 
+conf t
+vlan 25
+name pnp.gov.ph
+int vlan 25
+no shutdown
+ip add 10.0.1.0 255.255.255.0
+ip dhcp Excluded-Add 10.0.1.1 10.0.1.20
+ip dhcp pool pnp.gov.ph
+network 10.0.1.0 255.255.255.0
+default-router 10.0.1.0
+domain-name pnp.gov.ph.com
+dns-server 10.32.1.10
+option 150 ip 10.32.100.8
+do sh run | sec dhcp
+int fa 0/5
+ switchport access vlan 25
+
+@@@for etelecare.com
+config t
+vlan 25
+name etelecare.com
+int vlan 25
+no shutdown
+ip add 10.0.32.1 255.255.224.0
+ip dhcp Excluded-Add 10.0.32.1 10.0.32.100
+ip dhcp pool etelecare.com
+ network 10.0.32.0 255.255.224.0 --- IP ng site
+ default-router 10.0.32.1
+ domain-name etelecare.com
+ dns-server 10.32.1.10
+ option 150 ip 10.32.100.8
+do sh run | sec dhcp
+int fa 0/5
+ switchport access vlan 25
+
+@p1:
+conf t
+int e0/0
+ip add 10.2.1.101 255.255.255.0
+no shutdown
+
+@p2:
+conf t
+int e1/0
+ip add 10.2.1.102 255.255.255.0
+no shutdown
+
+@@Lipat vlan sa a1/12
+@A1:
+conf t
+int e0/0
+ switchport access vlan 10
+end
+@A2:
+conf t
+int e1/0
+ switchport access vlan 10
+end
+
+TASK9:
+@@Static Route/IP for END DEVICES
+p1: 10.1.4.4/30 10.2.2.0/24 192.168.1.128/27 gw: 10.2.1.1
+p2: 10.1.4.4/30 10.2.2.0/24 192.168.1.128/27 gw: 10.2.1.2
+
+@p1: STATIC ROUTES (manual)
+conf t
+no ip route 10.1.4.4 255.255.255.252 10.2.1.1
+no ip route 10.2.2.0 255.255.255.0 10.2.1.1
+no ip route 192.168.1.128 255.255.255.224 10.2.1.1
+ip route 0.0.0.0 0.0.0.0 10.2.1.1
+do sh ip route static
+
+@@p1xxx
+conf t
+ip route 10.1.4.4 255.255.255.252 10.2.1.1
+ip route 10.2.2.0 255.255.255.0 10.2.1.1
+ip route 192.168.1.128 255.255.255.224 10.2.1.1
+no ip route 0.0.0.0 0.0.0.0 10.2.1.1
+do sh ip route
+
+@p2
+conf t
+no ip route 10.1.4.4 255.255.255.252 10.2.1.2
+no ip route 10.2.2.0 255.255.255.0 10.2.1.2
+no ip route 192.168.1.128 255.255.255.224 10.2.1.2
+ip route 0.0.0.0 0.0.0.0 10.2.1.2
+====
+TASK10: SANA ALL Routes = Default Route on P1, p2
+@@p1:
+conf t
+ip route 0.0.0.0 0.0.0.0 10.2.1.1
+
+@@p2:
+conf t
+ip route 0.0.0.0 0.0.0.0 10.2.1.2
